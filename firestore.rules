@@ -38,9 +38,16 @@ service cloud.firestore {
           && d.name is string && d.name.size() > 0 && d.name.size() < 50
           && d.tel is string && d.tel.size() > 0 && d.tel.size() < 30
           && d.roomType is string && d.roomType.size() < 50
-          && d.checkin is string && d.checkout is string;
+          && d.checkin is string && d.checkout is string
+          // userId 를 넣을 경우 반드시 본인(uid)과 일치해야 함 (타인 사칭 방지)
+          && (!d.keys().hasAny(['userId']) || (request.auth != null && d.userId == request.auth.uid));
       }
-      allow read: if isAdmin();
+      function isOwner() {
+        return request.auth != null
+          && resource.data.keys().hasAny(['userId'])
+          && resource.data.userId == request.auth.uid;
+      }
+      allow read: if isAdmin() || isOwner();   // 관리자 또는 예약 본인
       allow create: if isValidReservation();
       allow update: if isAdmin();
       allow delete: if isAdmin();

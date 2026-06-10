@@ -627,6 +627,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="script/firebase-config.js"></script>
 <script src="script/reservation-store.js"></script>
+<script src="script/auth.js"></script>
 <script>
 (function () {
   var fmt = function (n) { return "₩ " + n.toLocaleString("ko-KR"); };
@@ -672,6 +673,17 @@
     recalc();
     loadBooked();
   });
+
+  /* ---- 로그인 시 예약자 정보 자동 입력 ---- */
+  if (window.Auth) {
+    Auth.onChange(function (u) {
+      if (!u) return;
+      var nameEl = document.getElementById("g-name");
+      var emailEl = document.getElementById("g-email");
+      if (nameEl && !nameEl.value) nameEl.value = u.displayName || "";
+      if (emailEl && !emailEl.value) emailEl.value = u.email || "";
+    });
+  }
 
   /* ---- 옵션 ---- */
   document.querySelectorAll(".opt").forEach(function (c) { c.addEventListener("change", recalc); });
@@ -807,6 +819,10 @@
       email: email,
       request: request
     };
+    if (window.Auth && Auth.uid()) {   // 로그인 상태면 본인 예약으로 기록 → '내 예약 내역'에 표시
+      payload.userId = Auth.uid();
+      payload.userEmail = (Auth.currentUser() && Auth.currentUser().email) || "";
+    }
 
     var btn = document.getElementById("submitBtn");
     btn.disabled = true;

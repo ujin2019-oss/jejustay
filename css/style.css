@@ -153,6 +153,70 @@ svg {
   height: 24px;
 }
 
+/* ===== 사용자 로그인(구글) 아바타 & 드롭다운 ===== */
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  background: var(--color-primary-light);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.user-avatar--initial { line-height: 30px; }
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 120;
+  min-width: 220px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.16);
+}
+.user-dropdown .user-info {
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 6px;
+}
+.user-dropdown .user-info strong {
+  display: block;
+  font-size: 15px;
+  color: var(--color-text-main);
+}
+.user-dropdown .user-info span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+.user-dropdown .user-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-text-main);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.user-dropdown .user-menu-item:hover {
+  background: var(--color-bg-gray);
+  color: var(--color-primary-dark);
+}
+.user-dropdown .user-logout { color: #c0392b; }
+
 .menu-toggle {
   display: none;
   width: 44px;

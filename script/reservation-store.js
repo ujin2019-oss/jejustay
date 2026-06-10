@@ -107,7 +107,7 @@
           }
           var ref = RES.doc();
           var batch = db.batch();
-          batch.set(ref, {
+          var resData = {
             roomType: roomType,
             roomPrice: data.roomPrice || 0,
             checkin: data.checkin,
@@ -124,7 +124,12 @@
             request: (data.request || "").trim(),
             status: "pending",
             createdAt: Date.now()
-          });
+          };
+          if (data.userId) {            // 로그인 사용자의 예약이면 본인 식별자 저장
+            resData.userId = data.userId;
+            resData.userEmail = data.userEmail || "";
+          }
+          batch.set(ref, resData);
           nights.forEach(function (date) {
             batch.set(AVAIL.doc(availId(roomType, date)), {
               roomType: roomType,
@@ -142,6 +147,17 @@
         return RES.orderBy("createdAt", "desc").get().then(function (snap) {
           var arr = [];
           snap.forEach(function (doc) { arr.push(resToItem(doc)); });
+          return arr;
+        });
+      },
+
+      /* (사용자) 내 예약 목록 — 본인 것만, 최신순 (인덱스 불필요하도록 클라이언트 정렬) */
+      getMyReservations: function (uid) {
+        if (!uid) return Promise.resolve([]);
+        return RES.where("userId", "==", uid).get().then(function (snap) {
+          var arr = [];
+          snap.forEach(function (doc) { arr.push(resToItem(doc)); });
+          arr.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
           return arr;
         });
       },
@@ -251,6 +267,7 @@
           totalPrice: data.totalPrice || 0,
           name: (data.name || "").trim(), tel: (data.tel || "").trim(),
           email: (data.email || "").trim(), request: (data.request || "").trim(),
+          userId: data.userId || null, userEmail: data.userEmail || "",
           status: "pending", createdAt: Date.now()
         };
         list.push(item); persist(list);
@@ -259,6 +276,11 @@
 
       getReservations: function () {
         return Promise.resolve(load().slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }));
+      },
+      getMyReservations: function (uid) {
+        if (!uid) return Promise.resolve([]);
+        return Promise.resolve(load().filter(function (r) { return r.userId === uid; })
+          .sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); }));
       },
       confirmReservation: function (id) {
         var list = load();
