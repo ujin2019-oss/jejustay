@@ -621,10 +621,22 @@
 </footer>
 
 <script src="script/action.js"></script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="script/firebase-config.js"></script>
+<script src="script/reservation-store.js"></script>
 <script>
 (function () {
   var fmt = function (n) { return "₩ " + n.toLocaleString("ko-KR"); };
   var basePrice = 250000;
+  var currentRoom = "숲속의 집";   // 선택된 객실 타입명
+  var bookedDates = {};            // 현재 객실의 예약마감 날짜 { "YYYY-MM-DD": true }
+
+  function iso(y, m, d) {
+    return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+  }
 
   /* ---- 합계 계산 ---- */
   function recalc() {
@@ -637,6 +649,18 @@
     document.getElementById("totalPriceLabel").textContent = fmt(basePrice + opt);
   }
 
+  /* ---- 객실의 예약마감 날짜 불러오기 ---- */
+  function loadBooked() {
+    return Reservation.getBookedDates(currentRoom).then(function (set) {
+      bookedDates = set || {};
+      renderCal();
+    }).catch(function (e) {
+      console.error("[예약] 예약현황 로드 실패", e);
+      bookedDates = {};
+      renderCal();
+    });
+  }
+
   /* ---- 타입 선택 ---- */
   document.getElementById("typeGrid").addEventListener("click", function (e) {
     var card = e.target.closest(".type-card");
@@ -644,7 +668,9 @@
     document.querySelectorAll(".type-card").forEach(function (c) { c.classList.remove("is-active"); });
     card.classList.add("is-active");
     basePrice = parseInt(card.dataset.price, 10);
+    currentRoom = card.dataset.name;
     recalc();
+    loadBooked();
   });
 
   /* ---- 옵션 ---- */
@@ -666,17 +692,16 @@
   });
 
   /* ---- 캘린더 ---- */
-  var today = new Date(2026, 5, 10);
-  var viewY = 2026, viewM = 5; // 0-based month (6월)
-  var selected = { y: 2026, m: 5, d: 18 };
-  var closedDays = { "2026-6": [9, 13, 22, 27] }; // 예약마감 예시
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var viewY = now.getFullYear(), viewM = now.getMonth();
+  var selected = null;
 
   function renderCal() {
     document.getElementById("calLabel").textContent = viewY + ". " + String(viewM + 1).padStart(2, "0");
     var first = new Date(viewY, viewM, 1).getDay();
     var days = new Date(viewY, viewM + 1, 0).getDate();
     var prevDays = new Date(viewY, viewM, 0).getDate();
-    var closed = closedDays[viewY + "-" + (viewM + 1)] || [];
     var body = document.getElementById("calBody");
     body.innerHTML = "";
 
@@ -694,22 +719,30 @@
         var btn = document.createElement("button");
         btn.type = "button";
         btn.textContent = cell.d;
+        var dateIso = iso(viewY, viewM, cell.d);
+        var cellDate = new Date(viewY, viewM, cell.d);
+        var isPast = !cell.muted && cellDate < today;
+
         if (cell.muted) {
           btn.className = "is-muted";
           btn.disabled = true;
-        } else if (closed.indexOf(cell.d) > -1) {
+        } else if (isPast) {
+          btn.className = "is-muted";
+          btn.disabled = true;
+        } else if (bookedDates[dateIso]) {
           btn.className = "is-closed";
           btn.disabled = true;
+          btn.title = "예약마감";
         } else {
-          if (selected.y === viewY && selected.m === viewM && selected.d === cell.d) {
+          if (selected && selected.y === viewY && selected.m === viewM && selected.d === cell.d) {
             btn.className = "is-selected";
           }
           (function (day) {
             btn.addEventListener("click", function () {
               selected = { y: viewY, m: viewM, d: day };
               renderCal();
-              var iso = viewY + "-" + String(viewM + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
-              document.getElementById("checkin").value = iso;
+              var inIso = iso(viewY, viewM, day);
+              document.getElementById("checkin").value = inIso;
               var out = new Date(viewY, viewM, day + 1);
               document.getElementById("checkout").value =
                 out.getFullYear() + "-" + String(out.getMonth() + 1).padStart(2, "0") + "-" + String(out.getDate()).padStart(2, "0");
@@ -730,14 +763,84 @@
     viewM++; if (viewM > 11) { viewM = 0; viewY++; } renderCal();
   });
 
+  /* ---- 예약하기 ---- */
   document.getElementById("submitBtn").addEventListener("click", function () {
     var name = document.getElementById("g-name").value.trim();
-    if (!name) { alert("예약자 이름을 입력해주세요."); return; }
-    alert("예약이 접수되었습니다. 확인 후 연락드리겠습니다.");
+    var tel = document.getElementById("g-tel").value.trim();
+    var email = document.getElementById("g-email").value.trim();
+    var request = document.getElementById("g-req").value.trim();
+    var checkin = document.getElementById("checkin").value;
+    var checkout = document.getElementById("checkout").value;
+
+    if (!checkin || !checkout) { alert("체크인/체크아웃 날짜를 선택해주세요."); return; }
+    if (checkout <= checkin) { alert("체크아웃은 체크인 다음 날 이후여야 합니다."); return; }
+    if (!name) { alert("예약자 이름을 입력해주세요."); document.getElementById("g-name").focus(); return; }
+    if (!tel) { alert("연락처를 입력해주세요."); document.getElementById("g-tel").focus(); return; }
+
+    var nights = Reservation.nightsBetween(checkin, checkout);
+
+    var options = [];
+    var optionTotal = 0;
+    document.querySelectorAll(".opt:checked").forEach(function (c) {
+      var price = parseInt(c.dataset.price, 10) || 0;
+      var label = c.closest("label") ? c.closest("label").textContent.trim() : "옵션";
+      options.push({ name: label, price: price });
+      optionTotal += price;
+    });
+
+    var adults = parseInt(document.getElementById("adultCount").textContent, 10) || 0;
+    var children = parseInt(document.getElementById("childCount").textContent, 10) || 0;
+
+    var payload = {
+      roomType: currentRoom,
+      roomPrice: basePrice,
+      checkin: checkin,
+      checkout: checkout,
+      nights: nights,
+      adults: adults,
+      children: children,
+      options: options,
+      optionTotal: optionTotal,
+      totalPrice: basePrice + optionTotal,
+      name: name,
+      tel: tel,
+      email: email,
+      request: request
+    };
+
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    var orig = btn.textContent;
+    btn.textContent = "처리 중...";
+
+    Reservation.createReservation(payload).then(function () {
+      alert("예약이 접수되었습니다. 확인 후 연락드리겠습니다.\n\n" +
+        "· 객실: " + currentRoom + "\n" +
+        "· 기간: " + checkin + " ~ " + checkout + " (" + nights.length + "박)\n" +
+        "· 결제예정금액: " + fmt(basePrice + optionTotal));
+      // 폼 초기화 & 달력 갱신
+      document.getElementById("g-name").value = "";
+      document.getElementById("g-tel").value = "";
+      document.getElementById("g-email").value = "";
+      document.getElementById("g-req").value = "";
+      selected = null;
+      loadBooked();
+    }).catch(function (e) {
+      console.error(e);
+      if (e && (e.code === "date-taken")) {
+        alert("선택하신 기간에 이미 예약된 날짜가 포함되어 있습니다.\n다른 날짜를 선택해주세요.\n(" + (e.conflict || []).join(", ") + ")");
+        loadBooked();
+      } else {
+        alert("예약 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = orig;
+    });
   });
 
-  renderCal();
   recalc();
+  loadBooked(); // 초기 객실의 예약현황 + 달력 렌더
 })();
 </script>
 </body>

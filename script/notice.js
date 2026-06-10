@@ -59,7 +59,7 @@
      A. Firebase (Firestore + Auth) 구현
      ===================================================== */
   function createFirebaseBackend() {
-    firebase.initializeApp(global.FIREBASE_CONFIG);
+    if (!firebase.apps.length) firebase.initializeApp(global.FIREBASE_CONFIG);
     var db = firebase.firestore();
     var auth = firebase.auth();
     var COL = db.collection("notices");

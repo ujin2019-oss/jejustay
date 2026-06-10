@@ -3,33 +3,59 @@ rules_version = '2';
 // ===========================================================
 // Jeju stay · Firestore 보안 규칙
 // -----------------------------------------------------------
-// - 공지 읽기: 누구나 가능
-// - 공지 작성/수정/삭제: 아래 관리자 이메일만 가능
-// - 조회수(views)는 방문자가 +1 씩만 올릴 수 있음
+// 공지(notices)      : 읽기 누구나 / 작성·수정·삭제 관리자 / 조회수 +1 누구나
+// 예약(reservations) : 작성 누구나 / 읽기·수정·삭제 관리자 (개인정보 보호)
+// 예약날짜(availability): 읽기 누구나 / 생성 누구나(중복불가) / 삭제 관리자
 //
-// ▶ 반드시 아래 'admin@jejustay.co.kr' 를 실제 관리자 이메일로 바꾸세요.
-//   (script/firebase-config.js 의 ADMIN_EMAILS 와 동일하게 맞추기)
+// ▶ 'ujin2019@gmail.com' 를 실제 관리자 이메일로 유지/변경하세요.
+//   (script/firebase-config.js 의 ADMIN_EMAILS 와 동일해야 함)
 // ===========================================================
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['ujin2019@gmail.com'];
+    }
+
+    // ---------- 공지사항 ----------
     match /notices/{doc} {
-
-      function isAdmin() {
-        return request.auth != null
-          && request.auth.token.email in ['ujin2019@gmail.com'];
-      }
-
-      // 조회수 1 증가만 허용 (views 필드만, +1 만)
       function onlyViewsIncrement() {
         return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
           && request.resource.data.views == resource.data.views + 1;
       }
-
       allow read: if true;
       allow create: if isAdmin();
       allow delete: if isAdmin();
       allow update: if isAdmin() || onlyViewsIncrement();
+    }
+
+    // ---------- 예약 요청 (개인정보 포함) ----------
+    match /reservations/{id} {
+      function isValidReservation() {
+        let d = request.resource.data;
+        return d.status == 'pending'
+          && d.name is string && d.name.size() > 0 && d.name.size() < 50
+          && d.tel is string && d.tel.size() > 0 && d.tel.size() < 30
+          && d.roomType is string && d.roomType.size() < 50
+          && d.checkin is string && d.checkout is string;
+      }
+      allow read: if isAdmin();
+      allow create: if isValidReservation();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---------- 예약된 날짜(중복예약 방지용, 개인정보 없음) ----------
+    match /availability/{id} {
+      function isValidAvailability() {
+        let d = request.resource.data;
+        return d.roomType is string && d.date is string;
+      }
+      allow read: if true;
+      allow create: if isValidAvailability();   // 동일 문서ID 중복 생성은 자동 거부 → 중복예약 방지
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

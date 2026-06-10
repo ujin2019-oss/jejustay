@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예약 관리 (관리자) | Jeju stay</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+<link rel="stylesheet" href="css/style.css">
+<style>
+.material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24 }
+
+/* ===== 예약 관리 전용 (.admin-page) ===== */
+.admin-page .admin-wrap { margin-bottom: 96px; }
+.admin-page .admin-wrap .container { max-width: 1240px; }
+
+.admin-page .admin-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.admin-page .admin-bar .who { font-size: 15px; color: var(--color-text-muted); }
+.admin-page .admin-bar .who b { color: var(--color-primary-dark); }
+
+.admin-page .btn-base {
+  height: 44px; padding: 0 18px; border-radius: 6px; font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--color-border); background: #fff; color: var(--color-text-main);
+}
+.admin-page .btn-base:hover { border-color: var(--color-primary-dark); color: var(--color-primary-dark); }
+.admin-page .btn-base.is-dark { background: var(--color-primary-dark); border-color: var(--color-primary-dark); color: #fff; }
+.admin-page .btn-base.is-dark:hover { background: var(--color-primary-light); color: #fff; }
+.admin-page .btn-sm { height: 34px; padding: 0 12px; font-size: 13px; }
+.admin-page .btn-sm.is-danger:hover { border-color: #c0392b; color: #c0392b; }
+
+/* 상태 필터 탭 */
+.admin-page .status-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-page .status-tabs button {
+  height: 38px; padding: 0 16px; border-radius: 999px; font-size: 14px;
+  border: 1px solid var(--color-border); background: #fff; color: var(--color-text-muted);
+}
+.admin-page .status-tabs button.is-active {
+  background: var(--color-primary-dark); border-color: var(--color-primary-dark); color: #fff; font-weight: 700;
+}
+
+/* 테이블 */
+.admin-page .res-table { width: 100%; border-collapse: collapse; border-top: 2px solid var(--color-primary-dark); font-size: 14px; }
+.admin-page .res-table th, .admin-page .res-table td {
+  padding: 12px 10px; border-bottom: 1px solid var(--color-border); text-align: center; vertical-align: middle;
+}
+.admin-page .res-table thead th { background: var(--color-bg-gray); font-weight: 700; color: var(--color-primary-dark); white-space: nowrap; }
+.admin-page .res-table .left { text-align: left; }
+.admin-page .res-table .muted { color: var(--color-text-muted); font-size: 13px; }
+.admin-page .res-table .empty td { padding: 60px 10px; color: var(--color-text-muted); }
+.admin-page .res-table tr.is-cancelled { background: #fafafa; color: #aaa; }
+.admin-page .res-table tr.is-cancelled .name { text-decoration: line-through; }
+
+.admin-page .status {
+  display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.admin-page .status.pending { background: #fff3cd; color: #8a6d3b; }
+.admin-page .status.confirmed { background: #e3f3e8; color: #1c6b3a; }
+.admin-page .status.cancelled { background: #f3e3e3; color: #a33; }
+
+.admin-page .row-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+
+.admin-page .opt-list { font-size: 12px; color: var(--color-text-muted); }
+
+/* 로그인 안내 */
+.admin-page .need-login {
+  text-align: center; padding: 80px 20px; border: 1px dashed var(--color-border); border-radius: 12px; background: var(--color-bg-gray);
+}
+.admin-page .need-login h2 { font-size: 22px; color: var(--color-primary-dark); margin-bottom: 12px; }
+.admin-page .need-login p { color: var(--color-text-muted); margin-bottom: 22px; }
+
+/* 로그인 모달 */
+.admin-page .login-modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(17,44,27,.45); }
+.admin-page .login-modal__inner { width: 100%; max-width: 380px; background: #fff; border-radius: 12px; padding: 36px 32px 32px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.admin-page .login-modal__close { position: absolute; top: 14px; right: 16px; font-size: 26px; line-height: 1; color: var(--color-text-muted); }
+.admin-page .login-modal h3 { font-size: 22px; font-weight: 700; color: var(--color-primary-dark); text-align: center; margin-bottom: 22px; }
+.admin-page .login-modal label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.admin-page .login-modal input { width: 100%; height: 46px; padding: 0 14px; margin-bottom: 16px; border: 1px solid var(--color-border); border-radius: 6px; font-family: inherit; font-size: 15px; }
+.admin-page .login-modal input:focus { outline: none; border-color: var(--color-primary-dark); }
+.admin-page .login-modal .btn-login { width: 100%; height: 50px; border-radius: 6px; background: var(--color-primary-dark); color: #fff; font-size: 16px; font-weight: 700; }
+.admin-page .login-modal .btn-login:hover { background: var(--color-primary-light); }
+.admin-page .login-modal .login-hint { margin-top: 16px; font-size: 13px; color: var(--color-text-muted); text-align: center; }
+.admin-page .login-modal .login-error { margin-bottom: 14px; padding: 10px 12px; border-radius: 6px; background: #fdecea; color: #c0392b; font-size: 13px; text-align: center; }
+
+.admin-page .mode-badge { display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600; background:#fff3cd; color:#8a6d3b; border:1px solid #f0e0a8; }
+
+.admin-page [hidden] { display: none !important; }
+
+@media (max-width: 1000px) {
+  .admin-page .res-table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+</style>
+</head>
+<body class="admin-page">
+
+<header class="site-header">
+  <div class="container">
+    <div class="brand">
+      <a href="index.html"><img src="images/logo.png" alt="JEJUSTAY" class="logo-mark"></a>
+    </div>
+    <nav aria-label="메인메뉴">
+      <ul class="gnb">
+        <li><a href="rooms.html">스테이 안내</a></li>
+        <li><a href="programs.html">프로그램</a></li>
+        <li><a href="reservation.html">예약공간</a></li>
+        <li><a href="notice.html">공지사항</a></li>
+      </ul>
+    </nav>
+    <button type="button" class="menu-toggle" aria-label="메뉴 열기"><span class="material-symbols-outlined">menu</span></button>
+    <div class="login_box">
+      <a href="#" aria-label="로그인"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5"/><path d="M3.8 21a8.2 8.2 0 0 1 16.4 0Z"/></svg></a>
+      <a href="#" aria-label="검색"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu-modal" aria-hidden="true">
+  <div class="mobile-menu-modal__inner" role="dialog" aria-modal="true" aria-label="모바일 메뉴">
+    <button type="button" class="mobile-menu-close" aria-label="메뉴 닫기">×</button>
+    <nav class="mobile-menu-nav" aria-label="모바일 메인 메뉴">
+      <a href="rooms.html">스테이 안내</a>
+      <a href="programs.html">프로그램</a>
+      <a href="reservation.html">예약공간</a>
+      <a href="notice.html">공지사항</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+  <section class="sub-hero">
+    <div class="sub-hero__visual image-slot"></div>
+    <div class="container">
+      <div class="sub-hero__text">
+        <span class="sec_label">ADMIN</span>
+        <h1>예약 관리</h1>
+        <p>접수된 예약을 확인하고 확정·취소할 수 있습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-wrap" aria-label="예약 관리">
+    <div class="container">
+
+      <!-- 로그인 필요 안내 -->
+      <div class="need-login" id="needLogin" hidden>
+        <h2>관리자 로그인이 필요합니다</h2>
+        <p>예약 정보는 관리자만 열람할 수 있습니다.</p>
+        <button type="button" class="btn-base is-dark" id="needLoginBtn">관리자 로그인</button>
+      </div>
+
+      <!-- 관리 화면 -->
+      <div id="adminPanel" hidden>
+        <div class="admin-bar">
+          <div class="who">관리자 <b id="whoEmail"></b> 로 로그인됨</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-base" id="refreshBtn"><span class="material-symbols-outlined" style="font-size:18px;">refresh</span>새로고침</button>
+            <button type="button" class="btn-base" id="logoutBtn">로그아웃</button>
+          </div>
+        </div>
+
+        <div class="admin-bar">
+          <div class="status-tabs" id="statusTabs">
+            <button type="button" data-status="all" class="is-active">전체 <span id="cnt-all">0</span></button>
+            <button type="button" data-status="pending">대기 <span id="cnt-pending">0</span></button>
+            <button type="button" data-status="confirmed">확정 <span id="cnt-confirmed">0</span></button>
+            <button type="button" data-status="cancelled">취소 <span id="cnt-cancelled">0</span></button>
+          </div>
+        </div>
+
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>신청일시</th>
+              <th>객실</th>
+              <th>체크인 ~ 체크아웃</th>
+              <th>인원</th>
+              <th>예약자</th>
+              <th>연락처</th>
+              <th>옵션</th>
+              <th>결제예정</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="resBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 로그인 모달 -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-modal__inner" role="dialog" aria-modal="true" aria-label="관리자 로그인">
+      <button type="button" class="login-modal__close" id="loginClose" aria-label="닫기">×</button>
+      <h3>관리자 로그인</h3>
+      <div class="login-error" id="loginError" hidden></div>
+      <form id="loginForm">
+        <label for="loginEmail">이메일</label>
+        <input type="email" id="loginEmail" placeholder="admin@example.com" autocomplete="username">
+        <label for="loginPw">비밀번호</label>
+        <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password">
+        <button type="submit" class="btn-login" id="loginSubmit">로그인</button>
+      </form>
+      <p class="login-hint">예약 정보 열람은 관리자만 가능합니다.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="f-top">
+    <div class="container">
+      <div class="f-logo"><img src="images/foot_logo_wh.png" alt="하단로고"><span>자연 속 프라이빗한 독채</span></div>
+      <nav class="f-nav">
+        <a href="#">회사소개</a><a href="#">이용안내</a><a href="#">이용약관</a><a href="#" class="strong">개인정보취급방침</a>
+      </nav>
+    </div>
+  </div>
+  <div class="f-bottom">
+    <div class="container">
+      <div class="f-info">
+        <div class="row"><b>상호</b> 제주스테이<span class="sep">|</span><b>대표</b> 김제주<span class="sep">|</span><b>전화</b> 031-767-2266</div>
+        <div class="copy">COPYRIGHT(c) 2026 jeju stay. All right reserved.</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="script/action.js"></script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="script/firebase-config.js"></script>
+<script src="script/reservation-store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var esc = Reservation.escapeHtml;
+  var fmt = function (n) { return "₩ " + (Number(n) || 0).toLocaleString("ko-KR"); };
+  var STATUS_KO = { pending: "대기", confirmed: "확정", cancelled: "취소" };
+
+  var els = {
+    needLogin: document.getElementById("needLogin"),
+    needLoginBtn: document.getElementById("needLoginBtn"),
+    adminPanel: document.getElementById("adminPanel"),
+    whoEmail: document.getElementById("whoEmail"),
+    refreshBtn: document.getElementById("refreshBtn"),
+    logoutBtn: document.getElementById("logoutBtn"),
+    statusTabs: document.getElementById("statusTabs"),
+    resBody: document.getElementById("resBody"),
+    loginModal: document.getElementById("loginModal"),
+    loginForm: document.getElementById("loginForm"),
+    loginEmail: document.getElementById("loginEmail"),
+    loginPw: document.getElementById("loginPw"),
+    loginError: document.getElementById("loginError"),
+    loginClose: document.getElementById("loginClose"),
+    loginSubmit: document.getElementById("loginSubmit")
+  };
+
+  var allItems = [];
+  var filter = "all";
+
+  function fmtDateTime(ms) {
+    if (!ms) return "-";
+    var d = new Date(ms);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") +
+      " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function applyAuthUI() {
+    var admin = Reservation.auth.isAdmin();
+    els.adminPanel.hidden = !admin;
+    els.needLogin.hidden = admin;
+    if (admin) {
+      var u = Reservation.auth.currentUser();
+      els.whoEmail.textContent = (u && u.email) ? u.email : "관리자";
+      load();
+    }
+  }
+
+  function load() {
+    els.resBody.innerHTML = '<tr class="empty"><td colspan="10">불러오는 중...</td></tr>';
+    Reservation.getReservations().then(function (list) {
+      allItems = list;
+      updateCounts();
+      render();
+    }).catch(function (e) {
+      console.error(e);
+      els.resBody.innerHTML = '<tr class="empty"><td colspan="10">예약을 불러오지 못했습니다. (권한 또는 네트워크 확인)</td></tr>';
+    });
+  }
+
+  function updateCounts() {
+    var c = { all: allItems.length, pending: 0, confirmed: 0, cancelled: 0 };
+    allItems.forEach(function (r) { if (c[r.status] != null) c[r.status]++; });
+    document.getElementById("cnt-all").textContent = c.all;
+    document.getElementById("cnt-pending").textContent = c.pending;
+    document.getElementById("cnt-confirmed").textContent = c.confirmed;
+    document.getElementById("cnt-cancelled").textContent = c.cancelled;
+  }
+
+  function render() {
+    var list = (filter === "all") ? allItems : allItems.filter(function (r) { return r.status === filter; });
+    if (!list.length) {
+      els.resBody.innerHTML = '<tr class="empty"><td colspan="10">예약 내역이 없습니다.</td></tr>';
+      return;
+    }
+    els.resBody.innerHTML = list.map(function (r) {
+      var nights = (r.nights && r.nights.length) ? r.nights.length : "-";
+      var people = "성인 " + (r.adults || 0) + (r.children ? " · 아동 " + r.children : "");
+      var opts = (r.options && r.options.length)
+        ? r.options.map(function (o) { return esc(o.name); }).join(", ")
+        : "-";
+      var actions = "";
+      if (r.status === "pending") {
+        actions += '<button class="btn-base btn-sm is-dark" data-act="confirm" data-id="' + esc(r.id) + '">확정</button>';
+        actions += '<button class="btn-base btn-sm is-danger" data-act="cancel" data-id="' + esc(r.id) + '">취소</button>';
+      } else if (r.status === "confirmed") {
+        actions += '<button class="btn-base btn-sm is-danger" data-act="cancel" data-id="' + esc(r.id) + '">취소</button>';
+      }
+      actions += '<button class="btn-base btn-sm is-danger" data-act="delete" data-id="' + esc(r.id) + '">삭제</button>';
+
+      return '<tr class="' + (r.status === "cancelled" ? "is-cancelled" : "") + '">' +
+        '<td class="muted">' + fmtDateTime(r.createdAt) + '</td>' +
+        '<td>' + esc(r.roomType) + '</td>' +
+        '<td>' + esc(r.checkin) + ' ~ ' + esc(r.checkout) + '<br><span class="muted">' + nights + '박</span></td>' +
+        '<td class="muted">' + people + '</td>' +
+        '<td class="name">' + esc(r.name) + '</td>' +
+        '<td>' + esc(r.tel) + '<br><span class="muted">' + esc(r.email || "") + '</span></td>' +
+        '<td class="opt-list left">' + opts + (r.optionTotal ? '<br>(' + fmt(r.optionTotal) + ')' : '') + '</td>' +
+        '<td><b>' + fmt(r.totalPrice) + '</b></td>' +
+        '<td><span class="status ' + r.status + '">' + (STATUS_KO[r.status] || r.status) + '</span></td>' +
+        '<td><div class="row-actions">' + actions + '</div></td>' +
+        '</tr>';
+    }).join("");
+  }
+
+  /* 액션 (확정/취소/삭제) */
+  els.resBody.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    var id = btn.getAttribute("data-id");
+    var act = btn.getAttribute("data-act");
+
+    if (act === "confirm") {
+      Reservation.confirmReservation(id).then(load).catch(errAlert);
+    } else if (act === "cancel") {
+      if (!confirm("이 예약을 취소하시겠습니까? (예약된 날짜가 다시 예약 가능해집니다)")) return;
+      Reservation.cancelReservation(id).then(load).catch(errAlert);
+    } else if (act === "delete") {
+      if (!confirm("이 예약을 완전히 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+      Reservation.deleteReservation(id).then(load).catch(errAlert);
+    }
+  });
+  function errAlert(e) { console.error(e); alert("처리 중 오류가 발생했습니다."); }
+
+  els.statusTabs.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-status]");
+    if (!btn) return;
+    filter = btn.getAttribute("data-status");
+    els.statusTabs.querySelectorAll("button").forEach(function (b) { b.classList.remove("is-active"); });
+    btn.classList.add("is-active");
+    render();
+  });
+
+  els.refreshBtn.addEventListener("click", load);
+  els.logoutBtn.addEventListener("click", function () { Reservation.auth.signOut(); });
+
+  /* ----- 로그인 모달 ----- */
+  function openLogin() { els.loginError.hidden = true; els.loginModal.hidden = false; els.loginEmail.focus(); }
+  function closeLogin() { els.loginModal.hidden = true; els.loginPw.value = ""; }
+  function showLoginError(m) { els.loginError.textContent = m; els.loginError.hidden = false; }
+  function authErrorMsg(err) {
+    var code = err && err.code ? err.code : "";
+    if (code.indexOf("user-not-found") > -1 || code.indexOf("wrong-password") > -1 ||
+        code.indexOf("invalid-credential") > -1 || code.indexOf("invalid-email") > -1)
+      return "이메일 또는 비밀번호가 올바르지 않습니다.";
+    if (code.indexOf("too-many-requests") > -1) return "시도가 많아 잠시 후 다시 시도해주세요.";
+    return "로그인에 실패했습니다. (" + (code || "오류") + ")";
+  }
+
+  els.needLoginBtn.addEventListener("click", openLogin);
+  els.loginClose.addEventListener("click", closeLogin);
+  els.loginModal.addEventListener("click", function (e) { if (e.target === els.loginModal) closeLogin(); });
+  els.loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = els.loginEmail.value.trim();
+    var pw = els.loginPw.value;
+    if (!email || !pw) { showLoginError("이메일과 비밀번호를 입력해주세요."); return; }
+    els.loginSubmit.disabled = true; els.loginError.hidden = true;
+    Reservation.auth.signIn(email, pw).then(function () {
+      return new Promise(function (res) { setTimeout(res, 0); });
+    }).then(function () {
+      if (!Reservation.auth.isAdmin()) { showLoginError("관리자 권한이 없는 계정입니다."); Reservation.auth.signOut(); return; }
+      closeLogin();
+    }).catch(function (err) { showLoginError(authErrorMsg(err)); })
+      .finally(function () { els.loginSubmit.disabled = false; });
+  });
+
+  /* ----- 초기화 ----- */
+  if (Reservation.mode === "local") {
+    var b = document.createElement("span");
+    b.className = "mode-badge"; b.textContent = "로컬 테스트 모드";
+    document.querySelector(".admin-bar .who") && document.querySelector(".admin-bar .who").appendChild(b);
+  }
+  Reservation.auth.onChange(applyAuthUI);
+})();
+</script>
+</body>
+</html>
