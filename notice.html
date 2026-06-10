@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공지사항 | Jeju stay</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+<link rel="stylesheet" href="css/style.css">
+<style>
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+/* ===== 공지사항 전용 스타일 (.notice-page 스코프) ===== */
+.notice-page .notice-wrap { margin-bottom: 96px; }
+.notice-page .notice-wrap .container { max-width: 1100px; }
+
+/* 공통 배지 */
+.notice-page .cat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+}
+.notice-page .cat.c-notice,
+.notice-page .cat.c-event {
+  border-color: var(--color-primary-dark);
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+.notice-page .cat.c-news {
+  border-color: var(--color-accent-gold);
+  background: var(--color-accent-gold);
+  color: #fff;
+}
+
+/* ---- 목록 툴바 ---- */
+.notice-page .board-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.notice-page .board-toolbar .total { font-size: 15px; color: var(--color-text-muted); }
+.notice-page .board-toolbar .total b { color: var(--color-primary-dark); font-weight: 700; }
+.notice-page .toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.notice-page select,
+.notice-page .search-box input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--color-text-main);
+  background: #fff;
+}
+.notice-page select:focus,
+.notice-page .search-box input:focus { outline: none; border-color: var(--color-primary-dark); }
+.notice-page .search-box { display: inline-flex; gap: 8px; }
+.notice-page .search-box input { width: 220px; }
+.notice-page .btn-write {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 6px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.notice-page .btn-write:hover { background: var(--color-primary-light); }
+
+/* ---- 목록 테이블 ---- */
+.notice-page .board-table { width: 100%; border-collapse: collapse; border-top: 2px solid var(--color-primary-dark); }
+.notice-page .board-table th,
+.notice-page .board-table td {
+  padding: 16px 12px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+}
+.notice-page .board-table thead th {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  background: var(--color-bg-gray);
+}
+.notice-page .board-table .col-no { width: 80px; color: var(--color-text-muted); font-size: 15px; }
+.notice-page .board-table .col-cat { width: 110px; }
+.notice-page .board-table .col-title { text-align: left; }
+.notice-page .board-table .col-date { width: 130px; color: var(--color-text-muted); font-size: 14px; }
+.notice-page .board-table .col-views { width: 90px; color: var(--color-text-muted); font-size: 14px; }
+.notice-page .board-table tbody tr { cursor: pointer; transition: background .15s; }
+.notice-page .board-table tbody tr:hover { background: var(--color-bg-gray); }
+.notice-page .board-table .row-title { font-weight: 500; color: var(--color-text-main); }
+.notice-page .board-table tbody tr:hover .row-title { color: var(--color-primary-dark); }
+.notice-page .board-table .empty td { padding: 64px 12px; color: var(--color-text-muted); cursor: default; }
+.notice-page .board-table .empty:hover { background: transparent; }
+
+/* ---- 페이지네이션 ---- */
+.notice-page .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 36px;
+}
+.notice-page .pagination button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 15px;
+  color: var(--color-text-main);
+}
+.notice-page .pagination button:hover:not(:disabled) { border-color: var(--color-primary-dark); color: var(--color-primary-dark); }
+.notice-page .pagination button.is-active {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+  font-weight: 700;
+}
+.notice-page .pagination button:disabled { color: #ccc; cursor: default; }
+
+/* ---- 상세 보기 ---- */
+.notice-page .detail-head {
+  padding: 28px 4px 24px;
+  border-top: 2px solid var(--color-primary-dark);
+  border-bottom: 1px solid var(--color-border);
+}
+.notice-page .detail-head .d-cat { margin-bottom: 14px; }
+.notice-page .detail-head h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.4;
+}
+.notice-page .detail-meta {
+  display: flex;
+  gap: 22px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+.notice-page .detail-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.notice-page .detail-body {
+  min-height: 240px;
+  padding: 36px 4px;
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--color-text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* 이전/다음 글 */
+.notice-page .detail-nav { border-bottom: 1px solid var(--color-border); }
+.notice-page .detail-nav .nav-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 4px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.notice-page .detail-nav .nav-row + .nav-row { border-top: 1px solid var(--color-border); }
+.notice-page .detail-nav .nav-row:hover .nav-tit { color: var(--color-primary-dark); }
+.notice-page .detail-nav .nav-label { width: 70px; color: var(--color-text-muted); font-weight: 600; flex: none; }
+.notice-page .detail-nav .nav-tit { color: var(--color-text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-page .detail-nav .nav-row.is-none { cursor: default; color: var(--color-text-muted); }
+.notice-page .detail-nav .nav-row.is-none .nav-tit { color: #aaa; }
+
+/* 상세 하단 버튼 */
+.notice-page .detail-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+}
+.notice-page .detail-actions .right { display: flex; gap: 10px; }
+.notice-page .btn-base {
+  height: 48px;
+  padding: 0 26px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text-main);
+}
+.notice-page .btn-base:hover { border-color: var(--color-primary-dark); color: var(--color-primary-dark); }
+.notice-page .btn-base.is-dark { background: var(--color-primary-dark); border-color: var(--color-primary-dark); color: #fff; }
+.notice-page .btn-base.is-dark:hover { background: var(--color-primary-light); color: #fff; }
+.notice-page .btn-base.is-danger:hover { border-color: #c0392b; color: #c0392b; }
+
+/* ---- 글쓰기 / 수정 폼 ---- */
+.notice-page .write-form { border-top: 2px solid var(--color-primary-dark); padding-top: 28px; }
+.notice-page .form-row { margin-bottom: 22px; }
+.notice-page .form-row > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+.notice-page .form-row input[type="text"],
+.notice-page .form-row select,
+.notice-page .form-row textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--color-text-main);
+  background: #fff;
+}
+.notice-page .form-row select { height: 48px; }
+.notice-page .form-row textarea { min-height: 320px; resize: vertical; line-height: 1.8; }
+.notice-page .form-row input:focus,
+.notice-page .form-row select:focus,
+.notice-page .form-row textarea:focus { outline: none; border-color: var(--color-primary-dark); }
+.notice-page .form-actions { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+
+.notice-page [hidden] { display: none !important; }
+
+/* 관리자 상태 표시 */
+.notice-page .admin-toggle.is-on {
+  border-color: var(--color-primary-dark);
+  background: var(--color-bg-gray);
+  color: var(--color-primary-dark);
+}
+.notice-page .mode-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff3cd;
+  color: #8a6d3b;
+  border: 1px solid #f0e0a8;
+  vertical-align: middle;
+}
+
+/* 로그인 모달 */
+.notice-page .login-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 44, 27, .45);
+}
+.notice-page .login-modal__inner {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 36px 32px 32px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+}
+.notice-page .login-modal__close {
+  position: absolute;
+  top: 14px; right: 16px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+.notice-page .login-modal h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-align: center;
+  margin-bottom: 22px;
+}
+.notice-page .login-modal label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+.notice-page .login-modal input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 15px;
+}
+.notice-page .login-modal input:focus { outline: none; border-color: var(--color-primary-dark); }
+.notice-page .login-modal .btn-login {
+  width: 100%;
+  height: 50px;
+  border-radius: 6px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.notice-page .login-modal .btn-login:hover { background: var(--color-primary-light); }
+.notice-page .login-modal .login-hint {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.notice-page .login-modal .login-error {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #fdecea;
+  color: #c0392b;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+  .notice-page .board-toolbar { flex-direction: column; align-items: stretch; }
+  .notice-page .toolbar-right { justify-content: space-between; }
+  .notice-page .search-box input { width: 100%; }
+  .notice-page .search-box { flex: 1; }
+  .notice-page .board-table .col-views,
+  .notice-page .board-table thead .col-no { display: none; }
+  .notice-page .board-table .col-no { display: none; }
+  .notice-page .board-table th,
+  .notice-page .board-table td { padding: 13px 8px; font-size: 14px; }
+  .notice-page .board-table .col-cat { width: 70px; }
+  .notice-page .board-table .col-date { width: 92px; font-size: 12px; }
+  .notice-page .detail-head h2 { font-size: 21px; }
+  .notice-page .detail-actions { flex-direction: column; }
+  .notice-page .detail-actions .right { flex-direction: column; }
+  .notice-page .btn-base { width: 100%; justify-content: center; }
+  .notice-page .form-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body class="notice-page">
+
+<header class="site-header">
+  <div class="container">
+    <div class="brand">
+      <a href="index.html">
+        <img src="images/logo.png" alt="JEJUSTAY" class="logo-mark">
+      </a>
+    </div>
+
+    <nav aria-label="메인메뉴">
+      <ul class="gnb">
+        <li>
+          <a href="rooms.html" aria-haspopup="true" aria-expanded="false">스테이 안내</a>
+          <ul class="lnb">
+            <li><a href="rooms.html#forest">숲속의 집</a></li>
+            <li><a href="rooms.html#oreum">오름의 집</a></li>
+            <li><a href="rooms.html#ocean">바다의 집</a></li>
+            <li><a href="rooms.html#stone">돌담의 집</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="programs.html" aria-haspopup="true" aria-expanded="false">프로그램</a>
+          <ul class="lnb">
+            <li><a href="programs.html#experience">체험프로그램</a></li>
+            <li><a href="programs.html#living">리빙&어매니티</a></li>
+            <li><a href="programs.html#goods">제주굿즈</a></li>
+            <li><a href="programs.html#local">제주특산물</a></li>
+            <li><a href="programs.html#giftcard">기프트카드</a></li>
+          </ul>
+        </li>
+        <li><a href="reservation.html" aria-haspopup="true" aria-expanded="false">예약공간</a></li>
+        <li><a href="notice.html" aria-haspopup="true" aria-expanded="true" class="is-current">공지사항</a></li>
+      </ul>
+    </nav>
+
+    <button type="button" class="menu-toggle" aria-label="메뉴 열기">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <div class="login_box">
+      <a href="#" aria-label="로그인"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5"/><path d="M3.8 21a8.2 8.2 0 0 1 16.4 0Z"/></svg></a>
+      <a href="#" aria-label="검색"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu-modal" aria-hidden="true">
+  <div class="mobile-menu-modal__inner" role="dialog" aria-modal="true" aria-label="모바일 메뉴">
+    <button type="button" class="mobile-menu-close" aria-label="메뉴 닫기">×</button>
+    <div class="mobile-menu-actions">
+      <a href="#" class="icon-btn" aria-label="로그인">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5"/><path d="M3.8 21a8.2 8.2 0 0 1 16.4 0Z"/></svg>
+      </a>
+      <a href="#" class="icon-btn" aria-label="검색">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
+      </a>
+    </div>
+    <nav class="mobile-menu-nav" aria-label="모바일 메인 메뉴">
+      <a href="rooms.html">스테이 안내</a>
+      <a href="programs.html">프로그램</a>
+      <a href="reservation.html">예약공간</a>
+      <a href="notice.html">공지사항</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+  <section class="sub-hero">
+    <div class="sub-hero__visual image-slot"></div>
+    <div class="container">
+      <div class="sub-hero__text">
+        <span class="sec_label">NOTICE</span>
+        <h1>공지사항</h1>
+        <p>제주스테이의 새로운 소식과 이벤트,<br>이용 안내를 한눈에 확인하세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="notice-wrap" aria-label="공지사항 게시판">
+    <div class="container">
+
+      <!-- ===== 목록 ===== -->
+      <div id="view-list">
+        <div class="board-toolbar">
+          <div class="total">전체 <b id="totalCount">0</b>건</div>
+          <div class="toolbar-right">
+            <select id="filterCat" aria-label="분류 필터">
+              <option value="">전체 분류</option>
+              <option value="공지">공지</option>
+              <option value="이벤트">이벤트</option>
+              <option value="뉴스">뉴스</option>
+              <option value="이용안내">이용안내</option>
+            </select>
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="제목 검색">
+              <button type="button" class="btn-base" id="searchBtn">검색</button>
+            </div>
+            <button type="button" class="btn-write" id="writeBtn" hidden>
+              <span class="material-symbols-outlined" style="font-size:18px;">edit</span>글쓰기
+            </button>
+            <button type="button" class="btn-base admin-toggle" id="adminBtn">
+              <span class="material-symbols-outlined" style="font-size:18px;">lock</span><span id="adminBtnLabel">관리자 로그인</span>
+            </button>
+          </div>
+        </div>
+
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th class="col-no">번호</th>
+              <th class="col-cat">분류</th>
+              <th class="col-title">제목</th>
+              <th class="col-date">작성일</th>
+              <th class="col-views">조회</th>
+            </tr>
+          </thead>
+          <tbody id="listBody"></tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- ===== 상세 ===== -->
+      <div id="view-detail" hidden>
+        <div class="detail-head">
+          <div class="d-cat"><span class="cat" id="dCat"></span></div>
+          <h2 id="dTitle"></h2>
+          <div class="detail-meta">
+            <span>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span id="dDate"></span>
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              조회 <span id="dViews"></span>
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-body" id="dBody"></div>
+
+        <div class="detail-nav" id="dNav"></div>
+
+        <div class="detail-actions">
+          <button type="button" class="btn-base" id="toListBtn">
+            <span class="material-symbols-outlined" style="font-size:18px;">list</span>목록
+          </button>
+          <div class="right" id="detailAdminActions" hidden>
+            <button type="button" class="btn-base" id="editBtn">수정</button>
+            <button type="button" class="btn-base is-danger" id="deleteBtn">삭제</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 글쓰기 / 수정 ===== -->
+      <div id="view-write" hidden>
+        <form class="write-form" id="writeForm">
+          <h2 id="formTitle" style="font-size:24px;font-weight:700;color:var(--color-primary-dark);margin-bottom:24px;">공지사항 작성</h2>
+          <div class="form-row">
+            <label for="fCat">분류</label>
+            <select id="fCat">
+              <option value="공지">공지</option>
+              <option value="이벤트">이벤트</option>
+              <option value="뉴스">뉴스</option>
+              <option value="이용안내">이용안내</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="fTitle">제목</label>
+            <input type="text" id="fTitle" placeholder="제목을 입력해주세요" maxlength="100">
+          </div>
+          <div class="form-row">
+            <label for="fContent">내용</label>
+            <textarea id="fContent" placeholder="내용을 입력해주세요"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-base" id="cancelBtn">취소</button>
+            <button type="submit" class="btn-base is-dark" id="submitFormBtn">등록</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 관리자 로그인 모달 -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-modal__inner" role="dialog" aria-modal="true" aria-label="관리자 로그인">
+      <button type="button" class="login-modal__close" id="loginClose" aria-label="닫기">×</button>
+      <h3>관리자 로그인</h3>
+      <div class="login-error" id="loginError" hidden></div>
+      <form id="loginForm">
+        <label for="loginEmail">이메일</label>
+        <input type="email" id="loginEmail" placeholder="admin@jejustay.co.kr" autocomplete="username">
+        <label for="loginPw">비밀번호</label>
+        <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password">
+        <button type="submit" class="btn-login" id="loginSubmit">로그인</button>
+      </form>
+      <p class="login-hint">관리자 계정으로만 글 작성·수정·삭제가 가능합니다.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="f-top">
+    <div class="container">
+      <div class="f-logo">
+        <img src="images/foot_logo_wh.png" alt="하단로고">
+        <span>자연 속 프라이빗한 독채</span>
+      </div>
+      <nav class="f-nav">
+        <a href="#">회사소개</a>
+        <a href="#">이용안내</a>
+        <a href="#">이용약관</a>
+        <a href="#" class="strong">개인정보취급방침</a>
+      </nav>
+    </div>
+  </div>
+  <div class="f-bottom">
+    <div class="container">
+      <div class="f-info">
+        <div class="row"><b>상호</b> 제주스테이<span class="sep">|</span><b>대표</b> 김제주<span class="sep">|</span><b>전화</b> 031-767-2266</div>
+        <div class="row"><b>주소</b> 재주특별자치도 제주시 구좌읍 해맞이로 123-4<span class="sep">|</span><b>사업자등록번호</b> 123-45-67890 [사업자정보확인]</div>
+        <div class="row"><b>통신판매업신고번호</b> 제 2025-제주-12345호<span class="sep">|</span><b>개인정보관리책임자</b> 김제주</div>
+        <div class="copy">COPYRIGHT(c) 2026 jeju stay. All right reserved.</div>
+      </div>
+      <div class="f-certs">
+       <img src="images/foot_ico1.png" alt="">
+       <img src="images/foot_ico2.png" alt="">
+       <img src="images/foot_ico3.png" alt="">
+       <img src="images/foot_ico4.png" alt="">
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="script/action.js"></script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="script/firebase-config.js"></script>
+<script src="script/notice.js"></script>
+<script>
+(function () {
+  "use strict";
+  var esc = Notice.escapeHtml;
+  var PAGE_SIZE = 10;
+
+  var els = {
+    viewList: document.getElementById("view-list"),
+    viewDetail: document.getElementById("view-detail"),
+    viewWrite: document.getElementById("view-write"),
+    listBody: document.getElementById("listBody"),
+    totalCount: document.getElementById("totalCount"),
+    pagination: document.getElementById("pagination"),
+    filterCat: document.getElementById("filterCat"),
+    searchInput: document.getElementById("searchInput"),
+    searchBtn: document.getElementById("searchBtn"),
+    writeBtn: document.getElementById("writeBtn"),
+    adminBtn: document.getElementById("adminBtn"),
+    adminBtnLabel: document.getElementById("adminBtnLabel"),
+    // detail
+    detailAdminActions: document.getElementById("detailAdminActions"),
+    dCat: document.getElementById("dCat"),
+    dTitle: document.getElementById("dTitle"),
+    dDate: document.getElementById("dDate"),
+    dViews: document.getElementById("dViews"),
+    dBody: document.getElementById("dBody"),
+    dNav: document.getElementById("dNav"),
+    toListBtn: document.getElementById("toListBtn"),
+    editBtn: document.getElementById("editBtn"),
+    deleteBtn: document.getElementById("deleteBtn"),
+    // form
+    formTitle: document.getElementById("formTitle"),
+    writeForm: document.getElementById("writeForm"),
+    fCat: document.getElementById("fCat"),
+    fTitle: document.getElementById("fTitle"),
+    fContent: document.getElementById("fContent"),
+    cancelBtn: document.getElementById("cancelBtn"),
+    submitFormBtn: document.getElementById("submitFormBtn"),
+    // login modal
+    loginModal: document.getElementById("loginModal"),
+    loginForm: document.getElementById("loginForm"),
+    loginEmail: document.getElementById("loginEmail"),
+    loginPw: document.getElementById("loginPw"),
+    loginError: document.getElementById("loginError"),
+    loginClose: document.getElementById("loginClose"),
+    loginSubmit: document.getElementById("loginSubmit")
+  };
+
+  var state = { page: 1, cat: "", keyword: "" };
+  var seeded = false;
+
+  /* ---------- 뷰 전환 ---------- */
+  function showView(name) {
+    els.viewList.hidden = name !== "list";
+    els.viewDetail.hidden = name !== "detail";
+    els.viewWrite.hidden = name !== "write";
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  /* ---------- 목록 ---------- */
+  function renderList() {
+    els.listBody.innerHTML = '<tr class="empty"><td colspan="5">불러오는 중...</td></tr>';
+    els.pagination.innerHTML = "";
+    return Notice.getAll().then(function (all) {
+      var list = all;
+      if (state.cat) list = list.filter(function (n) { return n.category === state.cat; });
+      if (state.keyword) {
+        var k = state.keyword.toLowerCase();
+        list = list.filter(function (n) { return (n.title || "").toLowerCase().indexOf(k) > -1; });
+      }
+
+      var total = list.length;
+      els.totalCount.textContent = total;
+
+      var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (state.page > pages) state.page = pages;
+      var start = (state.page - 1) * PAGE_SIZE;
+      var pageItems = list.slice(start, start + PAGE_SIZE);
+
+      if (!total) {
+        els.listBody.innerHTML = '<tr class="empty"><td colspan="5">등록된 공지사항이 없습니다.</td></tr>';
+        els.pagination.innerHTML = "";
+        return;
+      }
+
+      els.listBody.innerHTML = pageItems.map(function (n, i) {
+        var no = total - (start + i); // 최신글이 큰 번호
+        return '<tr data-id="' + esc(n.id) + '">' +
+          '<td class="col-no">' + no + '</td>' +
+          '<td class="col-cat"><span class="cat ' + Notice.categoryClass(n.category) + '">' + esc(n.category) + '</span></td>' +
+          '<td class="col-title"><span class="row-title">' + esc(n.title) + '</span></td>' +
+          '<td class="col-date">' + esc(n.date) + '</td>' +
+          '<td class="col-views">' + (n.views || 0) + '</td>' +
+          '</tr>';
+      }).join("");
+
+      renderPagination(pages);
+    }).catch(function (e) {
+      console.error(e);
+      els.listBody.innerHTML = '<tr class="empty"><td colspan="5">목록을 불러오지 못했습니다.</td></tr>';
+    });
+  }
+
+  function renderPagination(pages) {
+    var html = "";
+    html += '<button type="button" data-page="' + (state.page - 1) + '"' + (state.page <= 1 ? " disabled" : "") + ' aria-label="이전">‹</button>';
+    for (var p = 1; p <= pages; p++) {
+      html += '<button type="button" data-page="' + p + '"' + (p === state.page ? ' class="is-active"' : "") + '>' + p + '</button>';
+    }
+    html += '<button type="button" data-page="' + (state.page + 1) + '"' + (state.page >= pages ? " disabled" : "") + ' aria-label="다음">›</button>';
+    els.pagination.innerHTML = html;
+  }
+
+  /* ---------- 상세 ---------- */
+  function renderDetail(id) {
+    els.dTitle.textContent = "불러오는 중...";
+    els.dBody.textContent = "";
+    els.dNav.innerHTML = "";
+    els.dCat.textContent = "";
+    els.dDate.textContent = "";
+    els.dViews.textContent = "";
+
+    return Notice.incrementViews(id).then(function () {
+      return Notice.getAll();
+    }).then(function (all) {
+      var idx = all.findIndex(function (n) { return String(n.id) === String(id); });
+      if (idx < 0) {
+        alert("존재하지 않는 게시글입니다.");
+        goList();
+        return;
+      }
+      var item = all[idx];
+
+      els.dCat.className = "cat " + Notice.categoryClass(item.category);
+      els.dCat.textContent = item.category;
+      els.dTitle.textContent = item.title;
+      els.dDate.textContent = item.date;
+      els.dViews.textContent = item.views || 0;
+      els.dBody.textContent = item.content;
+
+      els.editBtn.dataset.id = item.id;
+      els.deleteBtn.dataset.id = item.id;
+
+      // 이전/다음 글 (전체 최신순 기준)
+      var prev = idx > 0 ? all[idx - 1] : null;              // 더 최신 글
+      var next = idx < all.length - 1 ? all[idx + 1] : null; // 더 이전 글
+      var navHtml = "";
+      if (prev) {
+        navHtml += '<div class="nav-row" data-id="' + esc(prev.id) + '"><span class="nav-label">이전 글</span><span class="nav-tit">' + esc(prev.title) + '</span></div>';
+      } else {
+        navHtml += '<div class="nav-row is-none"><span class="nav-label">이전 글</span><span class="nav-tit">이전 글이 없습니다.</span></div>';
+      }
+      if (next) {
+        navHtml += '<div class="nav-row" data-id="' + esc(next.id) + '"><span class="nav-label">다음 글</span><span class="nav-tit">' + esc(next.title) + '</span></div>';
+      } else {
+        navHtml += '<div class="nav-row is-none"><span class="nav-label">다음 글</span><span class="nav-tit">다음 글이 없습니다.</span></div>';
+      }
+      els.dNav.innerHTML = navHtml;
+    }).catch(function (e) {
+      console.error(e);
+      els.dTitle.textContent = "게시글을 불러오지 못했습니다.";
+    });
+  }
+
+  /* ---------- 폼(글쓰기/수정) ---------- */
+  function openWrite(editId) {
+    if (!Notice.auth.isAdmin()) { openLogin(); return; }
+    if (editId) {
+      Notice.get(editId).then(function (item) {
+        if (!item) { alert("존재하지 않는 게시글입니다."); goList(); return; }
+        els.formTitle.textContent = "공지사항 수정";
+        els.submitFormBtn.textContent = "수정";
+        els.fCat.value = item.category;
+        els.fTitle.value = item.title;
+        els.fContent.value = item.content;
+        els.writeForm.dataset.editId = editId;
+        showView("write");
+        setUrl({});
+      });
+    } else {
+      els.formTitle.textContent = "공지사항 작성";
+      els.submitFormBtn.textContent = "등록";
+      els.fCat.value = "공지";
+      els.fTitle.value = "";
+      els.fContent.value = "";
+      delete els.writeForm.dataset.editId;
+      showView("write");
+      setUrl({});
+    }
+  }
+
+  /* ---------- URL 동기화 ---------- */
+  function setUrl(params) {
+    var qs = new URLSearchParams();
+    Object.keys(params).forEach(function (k) { if (params[k] != null && params[k] !== "") qs.set(k, params[k]); });
+    var str = qs.toString();
+    history.replaceState(null, "", str ? "?" + str : location.pathname);
+  }
+
+  function goList() {
+    showView("list");
+    setUrl({});
+    renderList();
+  }
+  function goDetail(id) {
+    setUrl({ id: id });
+    showView("detail");
+    renderDetail(id);
+  }
+
+  /* ---------- 이벤트 바인딩 ---------- */
+  els.listBody.addEventListener("click", function (e) {
+    var tr = e.target.closest("tr[data-id]");
+    if (!tr) return;
+    goDetail(tr.getAttribute("data-id"));
+  });
+
+  els.pagination.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-page]");
+    if (!btn || btn.disabled) return;
+    var p = parseInt(btn.getAttribute("data-page"), 10);
+    if (p < 1) return;
+    state.page = p;
+    renderList();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  els.filterCat.addEventListener("change", function () {
+    state.cat = this.value;
+    state.page = 1;
+    renderList();
+  });
+
+  function doSearch() {
+    state.keyword = els.searchInput.value.trim();
+    state.page = 1;
+    renderList();
+  }
+  els.searchBtn.addEventListener("click", doSearch);
+  els.searchInput.addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
+
+  els.writeBtn.addEventListener("click", function () { openWrite(null); });
+
+  els.toListBtn.addEventListener("click", goList);
+
+  els.dNav.addEventListener("click", function (e) {
+    var row = e.target.closest(".nav-row[data-id]");
+    if (!row) return;
+    goDetail(row.getAttribute("data-id"));
+  });
+
+  els.editBtn.addEventListener("click", function () { openWrite(this.dataset.id); });
+
+  els.deleteBtn.addEventListener("click", function () {
+    var id = this.dataset.id;
+    if (!confirm("이 게시글을 삭제하시겠습니까?")) return;
+    Notice.remove(id).then(function () {
+      alert("삭제되었습니다.");
+      goList();
+    }).catch(function (e) {
+      console.error(e);
+      alert("삭제 중 오류가 발생했습니다. 관리자 권한을 확인해주세요.");
+    });
+  });
+
+  els.cancelBtn.addEventListener("click", function () {
+    var editId = els.writeForm.dataset.editId;
+    if (editId) goDetail(editId);
+    else goList();
+  });
+
+  els.writeForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var title = els.fTitle.value.trim();
+    var content = els.fContent.value.trim();
+    if (!title) { alert("제목을 입력해주세요."); els.fTitle.focus(); return; }
+    if (!content) { alert("내용을 입력해주세요."); els.fContent.focus(); return; }
+
+    var editId = els.writeForm.dataset.editId;
+    var data = { category: els.fCat.value, title: title, content: content };
+    els.submitFormBtn.disabled = true;
+    var p = editId ? Notice.update(editId, data) : Notice.add(data);
+    p.then(function (saved) {
+      alert(editId ? "수정되었습니다." : "등록되었습니다.");
+      goDetail(saved.id);
+    }).catch(function (e) {
+      console.error(e);
+      alert("저장 중 오류가 발생했습니다. 관리자 권한을 확인해주세요.");
+    }).finally(function () {
+      els.submitFormBtn.disabled = false;
+    });
+  });
+
+  /* ---------- 관리자 인증 ---------- */
+  function applyAdminUI() {
+    var admin = Notice.auth.isAdmin();
+    els.writeBtn.hidden = !admin;
+    els.detailAdminActions.hidden = !admin;
+
+    if (!Notice.auth.enabled) {
+      // 로컬 테스트 모드: 로그인 불필요(항상 관리자)
+      els.adminBtn.hidden = true;
+      return;
+    }
+    els.adminBtn.hidden = false;
+    var u = Notice.auth.currentUser();
+    if (u && u.email) {
+      els.adminBtnLabel.textContent = "로그아웃";
+      els.adminBtn.classList.add("is-on");
+    } else {
+      els.adminBtnLabel.textContent = "관리자 로그인";
+      els.adminBtn.classList.remove("is-on");
+    }
+  }
+
+  function openLogin() {
+    if (!Notice.auth.enabled) { return; }
+    els.loginError.hidden = true;
+    els.loginModal.hidden = false;
+    els.loginEmail.focus();
+  }
+  function closeLogin() {
+    els.loginModal.hidden = true;
+    els.loginPw.value = "";
+  }
+  function showLoginError(msg) {
+    els.loginError.textContent = msg;
+    els.loginError.hidden = false;
+  }
+  function authErrorMsg(err) {
+    var code = err && err.code ? err.code : "";
+    if (code.indexOf("user-not-found") > -1 || code.indexOf("wrong-password") > -1 ||
+        code.indexOf("invalid-credential") > -1 || code.indexOf("invalid-email") > -1) {
+      return "이메일 또는 비밀번호가 올바르지 않습니다.";
+    }
+    if (code.indexOf("too-many-requests") > -1) return "시도가 많아 잠시 후 다시 시도해주세요.";
+    if (code.indexOf("network") > -1) return "네트워크 오류가 발생했습니다.";
+    return "로그인에 실패했습니다. (" + (code || "오류") + ")";
+  }
+
+  els.adminBtn.addEventListener("click", function () {
+    var u = Notice.auth.currentUser();
+    if (u && u.email) {
+      Notice.auth.signOut();
+    } else {
+      openLogin();
+    }
+  });
+  els.loginClose.addEventListener("click", closeLogin);
+  els.loginModal.addEventListener("click", function (e) {
+    if (e.target === els.loginModal) closeLogin();
+  });
+  els.loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = els.loginEmail.value.trim();
+    var pw = els.loginPw.value;
+    if (!email || !pw) { showLoginError("이메일과 비밀번호를 입력해주세요."); return; }
+    els.loginSubmit.disabled = true;
+    els.loginError.hidden = true;
+    Notice.auth.signIn(email, pw).then(function () {
+      return new Promise(function (res) { setTimeout(res, 0); }); // 인증 상태 반영 대기
+    }).then(function () {
+      if (!Notice.auth.isAdmin()) {
+        showLoginError("관리자 권한이 없는 계정입니다.");
+        Notice.auth.signOut();
+        return;
+      }
+      closeLogin();
+    }).catch(function (err) {
+      showLoginError(authErrorMsg(err));
+    }).finally(function () {
+      els.loginSubmit.disabled = false;
+    });
+  });
+
+  /* ---------- 초기 진입 ---------- */
+  function route() {
+    var qs = new URLSearchParams(location.search);
+    if (qs.get("write") === "1") { openWrite(null); return; }
+    var edit = qs.get("edit");
+    if (edit) { openWrite(edit); return; }
+    var id = qs.get("id");
+    if (id) { goDetail(id); return; }
+    goList();
+  }
+
+  function init() {
+    // 로컬 테스트 모드 배지
+    if (Notice.mode === "local") {
+      var badge = document.createElement("span");
+      badge.className = "mode-badge";
+      badge.textContent = "로컬 테스트 모드";
+      var totalEl = document.querySelector(".board-toolbar .total");
+      if (totalEl) totalEl.appendChild(badge);
+    }
+
+    // 인증 상태 변화 감지
+    Notice.auth.onChange(function () {
+      applyAdminUI();
+      // 관리자 첫 로그인 시 컬렉션이 비어 있으면 샘플 데이터 시드
+      if (Notice.auth.isAdmin() && Notice.mode === "firebase" && !seeded) {
+        seeded = true;
+        Notice.seedIfEmpty().then(function (did) {
+          if (did && !els.viewList.hidden) renderList();
+        }).catch(function () {});
+      }
+    });
+
+    route();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// ===========================================================
+// Jeju stay · Firestore 보안 규칙
+// -----------------------------------------------------------
+// - 공지 읽기: 누구나 가능
+// - 공지 작성/수정/삭제: 아래 관리자 이메일만 가능
+// - 조회수(views)는 방문자가 +1 씩만 올릴 수 있음
+//
+// ▶ 반드시 아래 'admin@jejustay.co.kr' 를 실제 관리자 이메일로 바꾸세요.
+//   (script/firebase-config.js 의 ADMIN_EMAILS 와 동일하게 맞추기)
+// ===========================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /notices/{doc} {
+
+      function isAdmin() {
+        return request.auth != null
+          && request.auth.token.email in ['ujin2019@gmail.com'];
+      }
+
+      // 조회수 1 증가만 허용 (views 필드만, +1 만)
+      function onlyViewsIncrement() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+          && request.resource.data.views == resource.data.views + 1;
+      }
+
+      allow read: if true;
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+      allow update: if isAdmin() || onlyViewsIncrement();
+    }
+  }
+}

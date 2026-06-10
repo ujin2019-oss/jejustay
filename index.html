@@ -52,7 +52,7 @@
           <a href="reservation.html" aria-haspopup="true" aria-expanded="false">예약공간</a>
         </li>
         <li>
-          <a href="#" aria-haspopup="true" aria-expanded="false">공지사항</a>
+          <a href="notice.html" aria-haspopup="true" aria-expanded="false">공지사항</a>
         </li>
       </ul>
     </nav>
@@ -83,7 +83,7 @@
       <a href="rooms.html">스테이 안내</a>
       <a href="programs.html">프로그램</a>
       <a href="reservation.html">예약공간</a>
-      <a href="#">공지사항</a>
+      <a href="notice.html">공지사항</a>
     </nav>
   </div>
 </div>
@@ -214,15 +214,9 @@
         <div class="sec_label reveal">STAY NEWS</div>
         <div class="n-head">
           <h3>공지사항 &amp; 뉴스</h3>
-          <a href="#" class="more">더보기 <span class="arrow">→</span></a>
+          <a href="notice.html" class="more">더보기 <span class="arrow">→</span></a>
         </div>
-        <ul>
-          <li><span class="cat c-notice">공지</span><span class="tit">여름 성수기 예약 안내</span><span class="date">2025-05-20</span></li>
-          <li><span class="cat c-news">이벤트</span><span class="tit">6월 제주 감성 패키지 이벤트</span><span class="date">2025-05-20</span></li>
-          <li><span class="cat c-info">뉴스</span><span class="tit">펜션 주변 여행지 추천</span><span class="date">2025-05-20</span></li>
-          <li><span class="cat c-event">이용안내</span><span class="tit">바베큐 이용 안내</span><span class="date">2025-05-01</span></li>
-          <li><span class="cat c-notice">공지</span><span class="tit">홈페이지 리뉴얼 오픈</span><span class="date">2025-04-25</span></li>
-        </ul>
+        <ul id="mainNoticeList"></ul>
       </div>
 
       <div class="inquiry_box reveal">
@@ -279,6 +273,12 @@
 </footer>
 
 <script src="script/action.js"></script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="script/firebase-config.js"></script>
+<script src="script/notice.js"></script>
 <script>
 /* scroll reveal */
 (function(){
