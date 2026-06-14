@@ -25,7 +25,7 @@ button { border: 0; background: none; cursor: pointer; font: inherit; }
 
 html { font-size: 14px; scroll-behavior: smooth; }
 body {
-  padding-top: 82px;
+  padding-top: 68px;
   font-family: var(--font-base);
   color: var(--color-text-main);
   background: var(--color-bg-white);
@@ -58,7 +58,7 @@ svg {
 .site-header .container {
   width: min(100% - 80px, var(--container-width));
   max-width: var(--container-width);
-  height: 82px;
+  height: 68px;
   display: grid;
   grid-template-columns: 220px 1fr 72px;
   align-items: center;
@@ -79,7 +79,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 40px;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .gnb > li {
@@ -108,7 +108,7 @@ svg {
   padding: 8px;
   transform: translate(-50%, 8px);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 0;
   background: var(--color-bg-white);
   opacity: 0;
   visibility: hidden;
@@ -127,13 +127,15 @@ svg {
   padding: 10px 12px;
   border-radius: 4px;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
+  text-align: center;
 }
 
 .lnb a:hover {
   background: var(--color-bg-gray);
   color: var(--color-primary-dark);
+  font-weight: 600;
 }
 
 .login_box {
@@ -240,11 +242,11 @@ svg {
 .mobile-menu-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .55);
+  background: rgba(17, 44, 27, .42);
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .25s ease, visibility .25s ease;
+  transition: opacity .3s ease, visibility .3s ease;
   z-index: 120;
 }
 .mobile-menu-modal.active {
@@ -256,61 +258,91 @@ svg {
   position: absolute;
   top: 0;
   right: 0;
-  width: min(320px, 88%);
+  width: min(360px, 90%);
   height: 100%;
-  padding: 24px;
+  padding: 20px 28px 30px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
   background: #fff;
-  box-shadow: -12px 0 32px rgba(0,0,0,.18);
+  box-shadow: -16px 0 44px rgba(0,0,0,.16);
 }
 .mobile-menu-close {
-  margin-left: auto;
-  width: 40px;
-  height: 40px;
+  order: 0;
+  align-self: flex-end;
+  width: 44px;
+  height: 44px;
+  margin: 0 -8px 6px 0;
   border: none;
   background: transparent;
-  color: var(--color-text-main);
-  font-size: 26px;
+  color: var(--color-primary-dark);
+  font-size: 30px;
+  font-weight: 300;
   line-height: 1;
   cursor: pointer;
 }
-.mobile-menu-actions {
+.mobile-menu-nav {
+  order: 1;
   display: flex;
-  gap: 14px;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+.mobile-menu-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 19px 2px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color .2s ease, padding-left .2s ease;
+}
+.mobile-menu-nav a::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  opacity: .4;
+  transition: opacity .2s ease;
+}
+.mobile-menu-nav a:hover,
+.mobile-menu-nav a:active {
+  color: var(--color-accent-gold);
+  padding-left: 8px;
+}
+.mobile-menu-nav a:hover::after {
+  opacity: 1;
+}
+.mobile-menu-actions {
+  order: 2;
+  margin-top: auto;
+  padding-top: 26px;
+  display: flex;
+  gap: 16px;
 }
 .icon-btn {
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  color: var(--color-primary-dark);
+  border: 1px solid var(--color-accent-gold);
+  border-radius: 0;
+  background: #fff;
+  color: var(--color-accent-gold);
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.icon-btn:hover {
+  background: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  color: #fff;
 }
 .icon-btn svg {
   width: 22px;
   height: 22px;
-}
-.mobile-menu-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.mobile-menu-nav a {
-  display: block;
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: #fafafa;
-  color: var(--color-text-main);
-  font-weight: 600;
-}
-.mobile-menu-nav a:hover {
-  border-color: var(--color-primary-dark);
-  color: var(--color-primary-dark);
 }
 
 /* Type */
@@ -896,7 +928,7 @@ section:not(#hero) {
 /* Footer */
 footer {
   padding: 72px 0 56px;
-  background: var(--color-primary-dark);
+  background: #a3906b;
   color: rgba(255,255,255,.8);
 }
 
@@ -991,24 +1023,27 @@ footer .f-bottom .container {
     repeating-linear-gradient(45deg, rgba(17,44,27,.08) 0 1px, transparent 1px 18px);
 }
 
-.rooms-page .site-header .is-current {
-  color: var(--color-primary-dark);
+.rooms-page .site-header .is-current,
+.notice-page .site-header .is-current {
+  color: #a3906b;
+  position: relative;
 }
 
-.rooms-page .site-header .is-current::after {
+.rooms-page .site-header .is-current::after,
+.notice-page .site-header .is-current::after {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -20px;
-  width: 8px;
-  height: 8px;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--color-primary-dark);
+  bottom: -13px;
+  width: 100%;
+  height: 4px;
+  transform: translateX(-50%);
+  background: #a3906b;
 }
 
 .sub-hero {
   position: relative;
-  height: 500px;
+  height: 497px;
   margin-bottom: 72px;
   overflow: hidden;
   color: #fff;
@@ -1324,9 +1359,12 @@ footer .f-bottom .container {
 }
 
 .rooms-cta ul li svg {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  padding: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.16);
 }
 
 .rooms-cta ul li .lbl {
@@ -1539,7 +1577,7 @@ footer .f-bottom .container {
   .room-features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .room-features li { min-height: 44px; }
   .room-benefits ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .rooms-cta { padding: 8px 12px; }
+  .rooms-cta { padding: 40px 28px; }
   .rooms-cta__image { min-height: 180px; }
   .inquiry_box { min-height: auto; padding: 28px; }
   footer { padding: 48px 0 40px; }
@@ -1553,7 +1591,6 @@ footer .f-bottom .container {
   .rooms-cta__image {
     display: none !important;
   }
-  /* keep sub-hero container/gradient but hide only the image inside on mobile */
   /* keep sub-hero container but remove background image/gradient on mobile for rooms page */
   .rooms-page .sub-hero__visual img {
     display: none !important;
@@ -1563,17 +1600,81 @@ footer .f-bottom .container {
     background-image: none !important;
   }
   .rooms-page .sub-hero {
-    margin-top: 12px;
+    margin-top: 32px;
     margin-bottom: 0;
     height: auto;
     min-height: 160px;
   }
   /* make sub-hero copy dark for better contrast on light background */
-  .rooms-page .sub-hero .sec_label,
   .rooms-page .sub-hero h1,
   .rooms-page .sub-hero p {
     color: var(--color-text-main) !important;
   }
+  /* keep the section label as gold accent + more gap before the title */
+  .rooms-page .sub-hero .sec_label {
+    color: var(--color-accent-gold) !important;
+    margin-bottom: 24px;
+  }
   /* reduce vertical spacing between sections on small screens */
   section:not(#hero) { margin-bottom: 24px; }
+}
+
+/* ===== Floating quick menu ===== */
+.quick-menu {
+  position: fixed;
+  top: 50%;
+  right: 22px;
+  transform: translateY(-50%);
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-primary-dark);
+  border-radius: 4px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.22);
+  overflow: hidden;
+}
+.quick-menu a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 78px;
+  padding: 15px 8px;
+  color: rgba(255,255,255,.88);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  transition: background .2s ease, color .2s ease;
+}
+.quick-menu a:last-child { border-bottom: none; }
+.quick-menu a svg { width: 23px; height: 23px; }
+.quick-menu a:hover { background: var(--color-accent-gold); color: #fff; }
+.quick-menu a.qm-primary { background: var(--color-accent-gold); color: #fff; }
+.quick-menu a.qm-primary:hover { background: #8d7a55; }
+
+@media (max-width: 600px) {
+  body { padding-bottom: 66px; }
+  .quick-menu {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    transform: none;
+    flex-direction: row;
+    border-radius: 0;
+    box-shadow: 0 -6px 20px rgba(0,0,0,.18);
+  }
+  .quick-menu a {
+    flex: 1;
+    width: auto;
+    gap: 5px;
+    padding: 10px 4px;
+    font-size: 11px;
+    border-bottom: none;
+    border-right: 1px solid rgba(255,255,255,.12);
+  }
+  .quick-menu a:last-child { border-right: none; }
+  .quick-menu a svg { width: 21px; height: 21px; }
 }
